@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="description" content="ShelbyAI — AI Dataset Marketplace powered by Shelby Protocol. Upload datasets, earn per read, access via pay-per-read endpoints."/>
+<title>ShelbyAI — AI Dataset Marketplace</title>
+<link rel="stylesheet" href="css/style.css"/>
+</head>
+<body>
+
+<!-- Topbar -->
+<div class="topbar z1">
+  <div class="logo">
+    <div class="logo-icon">🤖</div>
+    <div class="logo-name">Shelby<span>AI</span></div>
+    <div class="logo-tag">Dataset Marketplace</div>
+  </div>
+
+  <nav class="nav">
+    <button class="nav-item active" data-page="marketplace">
+      🛒 Marketplace
+    </button>
+    <button class="nav-item" data-page="upload">
+      📤 Contribute
+    </button>
+    <button class="nav-item" data-page="earnings">
+      💰 Earnings
+    </button>
+    <button class="nav-item" data-page="reads" style="position:relative">
+      ⚡ Live Reads
+      <span class="nav-badge" id="readsBadge">0</span>
+    </button>
+  </nav>
+
+  <div class="topbar-right">
+    <div class="live-pill">
+      <div class="live-dot"></div>
+      Shelby Testnet
+    </div>
+    <div class="block-pill">
+      Block <span class="block-val" id="blockNum">14,829,401</span>
+    </div>
+  </div>
+</div>
+
+<main class="main z1">
+
+  <!-- ══ MARKETPLACE ══ -->
+  <div class="page active" id="page-marketplace">
+    <div class="page-header">
+      <div>
+        <div class="page-title">AI Dataset Marketplace</div>
+        <div class="page-sub">Browse, access, and monetize AI datasets stored permanently on Shelby Protocol</div>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-icon">📦</div>
+        <div class="stat-lbl">Datasets</div>
+        <div class="stat-val" id="mktDatasets">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">📡</div>
+        <div class="stat-lbl">Total reads</div>
+        <div class="stat-val" id="mktReads">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">💰</div>
+        <div class="stat-lbl">Total earned</div>
+        <div class="stat-val green" id="mktEarnings">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">👥</div>
+        <div class="stat-lbl">Contributors</div>
+        <div class="stat-val" id="mktContributors">—</div>
+      </div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="mkt-toolbar">
+      <input class="search-box" id="dsSearch" placeholder="🔍 Search datasets, categories, tags…"/>
+      <select class="sort-select" id="dsSort">
+        <option value="popular">Most popular</option>
+        <option value="earnings">Highest earnings</option>
+        <option value="newest">Newest</option>
+        <option value="price">Lowest price</option>
+        <option value="rating">Top rated</option>
+      </select>
+    </div>
+
+    <!-- Category tabs -->
+    <div class="cat-tabs" id="catTabs"></div>
+
+    <!-- Dataset grid -->
+    <div class="ds-grid" id="datasetGrid"></div>
+  </div>
+
+  <!-- ══ UPLOAD / CONTRIBUTE ══ -->
+  <div class="page" id="page-upload">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Contribute a Dataset</div>
+        <div class="page-sub">Upload your AI dataset to Shelby — earn automatically with every read</div>
+      </div>
+    </div>
+
+    <div class="upload-grid">
+
+      <!-- Left: Upload form -->
+      <div>
+        <div class="card" style="margin-bottom:20px">
+          <div class="card-head">
+            <div class="card-title">Dataset file</div>
+          </div>
+          <div class="card-body">
+            <div class="dropzone" id="uploadZone">
+              <input type="file" id="fileInput" accept=".jsonl,.json,.csv,.parquet,.npy,.hdf5,.txt,.zip"/>
+              <div id="filePlaceholder">
+                <div class="dz-icon">📦</div>
+                <div class="dz-title">Drop your dataset here</div>
+                <div class="dz-sub">JSONL, CSV, Parquet, NPY, HDF5 · Any size</div>
+              </div>
+              <div id="filePreview" style="display:none"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><div class="card-title">Dataset details</div></div>
+          <div class="card-body">
+            <div class="form-group" style="margin-bottom:12px">
+              <label class="form-label">Dataset name *</label>
+              <input class="form-input" id="dsName" type="text" placeholder="e.g. GPT-4 Prompt Engineering Collection"/>
+            </div>
+            <div class="form-group" style="margin-bottom:12px">
+              <label class="form-label">Description *</label>
+              <textarea class="form-input form-textarea" id="dsDesc" placeholder="Describe your dataset, what it's useful for, how it was collected…"></textarea>
+            </div>
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label class="form-label">Category</label>
+                <select class="form-select" id="dsCategory"></select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Format</label>
+                <input class="form-input" id="dsFormat" type="text" placeholder="JSONL"/>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Price per read ($) *</label>
+                <input class="form-input" id="dsPrice" type="number" min="0.001" step="0.001" placeholder="0.005"/>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Number of records *</label>
+                <input class="form-input" id="dsRecords" type="number" min="1" placeholder="10000"/>
+              </div>
+            </div>
+            <button class="upload-btn" id="uploadBtn" onclick="Upload.uploadDataset()">
+              🚀 Upload to Shelby
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Progress + My datasets -->
+      <div>
+        <!-- Upload progress -->
+        <div class="card" id="uploadProgress" style="display:none;margin-bottom:20px">
+          <div class="card-head"><div class="card-title">Upload progress</div></div>
+          <div class="card-body">
+            <div class="up-steps">
+              <div class="up-step waiting" id="upStep-1">
+                <span class="up-step-icon">📦</span>
+                <span class="up-step-label">Chunking dataset</span>
+                <span class="up-step-status" id="upStatus-1">waiting</span>
+              </div>
+              <div class="up-step waiting" id="upStep-2">
+                <span class="up-step-icon">🔢</span>
+                <span class="up-step-label">Erasure coding (Clay 10+6)</span>
+                <span class="up-step-status" id="upStatus-2">waiting</span>
+              </div>
+              <div class="up-step waiting" id="upStep-3">
+                <span class="up-step-icon">⛓️</span>
+                <span class="up-step-label">Committing to Aptos</span>
+                <span class="up-step-status" id="upStatus-3">waiting</span>
+              </div>
+              <div class="up-step waiting" id="upStep-4">
+                <span class="up-step-icon">🌐</span>
+                <span class="up-step-label">Distributing to 16 nodes</span>
+                <span class="up-step-status" id="upStatus-4">waiting</span>
+              </div>
+              <div class="up-step waiting" id="upStep-5">
+                <span class="up-step-icon">✅</span>
+                <span class="up-step-label">Verifying integrity</span>
+                <span class="up-step-status" id="upStatus-5">waiting</span>
+              </div>
+            </div>
+            <div id="uploadResult"></div>
+          </div>
+        </div>
+
+        <!-- How earnings work -->
+        <div class="card" style="margin-bottom:20px">
+          <div class="card-head"><div class="card-title">How earnings work</div></div>
+          <div class="card-body">
+            <div style="font-family:var(--mono);font-size:11px;color:var(--text3);line-height:1.9">
+              1. You set a <span style="color:var(--green)">price per read</span><br/>
+              2. AI engineers access your dataset via Shelby's pay-per-read endpoint<br/>
+              3. Each read triggers a <span style="color:var(--accent2)">micropayment</span> on Aptos<br/>
+              4. Earnings flow directly to your account<br/>
+              5. Data never leaves Shelby — it's read <span style="color:var(--amber)">in-place</span><br/><br/>
+              <span style="color:var(--text2)">Example: 10,000 reads @ $0.005 = <strong style="color:var(--green)">$50.00</strong></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- My datasets -->
+        <div class="card">
+          <div class="card-head"><div class="card-title">My datasets</div></div>
+          <div class="card-body">
+            <div id="myDatasets"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ EARNINGS ══ -->
+  <div class="page" id="page-earnings">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Earnings Dashboard</div>
+        <div class="page-sub">Your data is working for you — earnings update in real time as reads happen</div>
+      </div>
+    </div>
+
+    <!-- Earnings summary -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-icon">💰</div>
+        <div class="stat-lbl">Total earned</div>
+        <div class="stat-val green" id="earnTotal">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">📅</div>
+        <div class="stat-lbl">Today</div>
+        <div class="stat-val" id="earnToday">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">📡</div>
+        <div class="stat-lbl">Total reads</div>
+        <div class="stat-val" id="earnReads">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">📦</div>
+        <div class="stat-lbl">My datasets</div>
+        <div class="stat-val" id="earnDatasets">—</div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px">
+      <!-- Chart -->
+      <div class="card">
+        <div class="card-head"><div class="card-title">Daily earnings (14 days)</div></div>
+        <div class="card-body">
+          <div class="earnings-chart-wrap">
+            <canvas id="earningsChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top datasets -->
+      <div class="card">
+        <div class="card-head"><div class="card-title">Top earning datasets</div></div>
+        <div class="card-body">
+          <div id="topDatasets"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Earnings history -->
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">Live earnings feed</div>
+        <div class="live-dot"></div>
+      </div>
+      <div class="card-body">
+        <div id="earningsHistory"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ LIVE READS ══ -->
+  <div class="page" id="page-reads">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Live Read Activity</div>
+        <div class="page-sub">Every read from Shelby nodes — real-time pay-per-read micropayments</div>
+      </div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-icon">📡</div>
+        <div class="stat-lbl">Total reads</div>
+        <div class="stat-val" id="readsTotal">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">💰</div>
+        <div class="stat-lbl">Total cost</div>
+        <div class="stat-val" id="readsTotalCost">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">⚡</div>
+        <div class="stat-lbl">Avg latency</div>
+        <div class="stat-val green" id="readsAvgLatency">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🌐</div>
+        <div class="stat-lbl">Storage nodes</div>
+        <div class="stat-val" id="readsNodes">16</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">Read feed</div>
+        <div class="live-dot"></div>
+      </div>
+      <div class="card-body">
+        <div id="readsFeed"></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- Detail modal -->
+<div class="modal-backdrop" id="modalBackdrop" onclick="if(event.target===this)Marketplace.closeModal()">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">Dataset details</div>
+      <button class="modal-close" onclick="Marketplace.closeModal()">✕</button>
+    </div>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <div class="toast-dot" id="toastDot"></div>
+  <span id="toastMsg"></span>
+</div>
+
+<script src="js/utils.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/marketplace.js"></script>
+<script src="js/upload.js"></script>
+<script src="js/earnings.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
